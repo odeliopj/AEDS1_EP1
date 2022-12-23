@@ -1,0 +1,202 @@
+////////////////////// ALUNOS ////////////////////////
+// Odélio POrto Júnior - 12701501                   //
+//                                                  //
+//                                                  //
+//////////////////////////////////////////////////////
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stddef.h>
+#include <math.h>
+
+#define true 1
+#define false 0
+#define TAMANHO 1000
+
+typedef int bool;
+
+////////////////// LISTA /////////////////////////////////////
+
+///////////////// 1) ESTRUTURA DE DADOS  - LISTA /////////////
+
+
+////////////////// LISTA  - FUNÇÕES //////////////////////////
+
+
+/******************************************************************/
+
+
+char *strsep(char **stringp, const char *delim) {
+    char *rv = *stringp;
+    if (rv) {
+        *stringp += strcspn(*stringp, delim);
+        if (**stringp)
+            *(*stringp)++ = '\0';
+        else
+            *stringp = 0; }
+    return rv;
+}
+
+////////////////// ARVORE  //////////////////////////////
+
+
+///////////////// 1) ESTRUTURA DE DADOS ////////////////
+
+typedef struct aux{
+    int linhaPalavra;
+    int contador;
+    char *palavra;
+    struct aux *esq, *dir;
+} NO;
+////////////////// ARVORE  - FUNÇÕES ///////////////////
+///////////////// 2) INSERÇÃO /////////////////////////
+
+/* 2.1) Inicialização */
+// somente endereço do nó raiz
+NO* inicializa() {
+    return(NULL);
+}
+
+/* 2.2) Cria novo nó*/
+NO* criaNovoNo (char* palavra){
+   NO novoNo = (NO*) malloc(sizeof(NO));
+   novoNo->esq = NULL;
+   novoNo->dir = NULL;
+   novoNo->linhaPalavra = 0;
+   novoNo->contador = 0;
+   strcpy(novoNo->palavra, palavra);
+   return (novoNo);
+}
+
+/* 2.3) Inserção - adiciona*/
+NO* adiciona(NO* raiz, NO* no) {
+
+    if(raiz == NULL){
+        return no;
+    }
+
+    else{
+
+       if(strcmp(no->palavra, raiz->palavra) < 0){
+            if (raiz->esq != NULL)
+                raiz->dir = adiciona(raiz->esq, no);
+            else{
+                raiz->esq = no;
+            }
+       }
+
+       else{
+            if(raiz->dir != NULL)
+                raiz->dir = adiciona(raiz->dir, no);
+            else
+                raiz->dir = no;
+        }
+            return raiz;
+    }
+}
+
+/////////////////////////IMPRIME //////////////////////
+  if (arvore != NULL) {
+    imprime(arvore->esq);
+    printf("%s ", arvore->palavra);
+    imprime(arvore->dir);
+  }
+}
+
+
+/******************************************************/
+
+/////////////////// MAIN //////////////////////////////
+
+
+int main(int argc, char ** argv){
+
+	FILE * in;
+	char * linha;
+	char * copia_ponteiro_linha;
+	char * quebra_de_linha;
+	char * palavra;
+	int contador_linha;
+
+	/*Escolha da estrutura pelo usuário*/
+    int opcao = 0;
+    while(opcao == 0){
+        printf("Escolha o tipo de estrutura: \n\nDigite 1 para Lista\nDigite 2 para Arvore\n\n");
+        scanf("%i", &opcao);
+        printf("\n %d \n", opcao);
+    }
+
+
+    /* Obter o nome do arquivo do usuário */
+    char nomeArquivo[30];
+    printf("Digite o nome do arquivo (inclua a extensao '.txt' no nome): ");
+    scanf("%s", &nomeArquivo);
+    printf("O nome do arquivo e: %s.\n\n\n", nomeArquivo);
+
+    //if(argc == 2) {
+
+
+   /////////////////// OPÇÃO 1- LISTA /////////////////////////////
+   if (opcao == 1){
+
+
+
+	}
+  
+	/////////////////// OPÇÃO 2 - ARVORE ////////////////////////////
+    else if (opcao == 2){
+		in = fopen(nomeArquivo, "r");
+
+		printf(">>>>> Carregando arquivo...\n");
+
+		contador_linha = 0;
+ 		linha = (char *) malloc((TAMANHO + 1) * sizeof(char)); //cria um vetor para as linhas
+
+		while(in && fgets(linha, TAMANHO, in)){ //reads a line from the specified stream and stores it into the string pointed to by str
+
+			if( (quebra_de_linha = strrchr(linha, '\n')) ) *quebra_de_linha = 0;
+
+			printf("linha %03d: '%s'\n", contador_linha + 1, linha);
+
+			// fazemos uma copia do endereço que corresponde ao array de chars
+			// usado para armazenar cada linha lida do arquivo pois a função 'strsep'
+			// modifica o endereço do ponteiro a cada chamada feita a esta função (e
+			// não queremos que 'linha' deixe de apontar para o inicio do array).
+
+			copia_ponteiro_linha = linha;
+
+			while( (palavra = strsep(&copia_ponteiro_linha, " ")) ){
+
+                char* copiaPalavra = (char*) malloc((strlen(palavra) + 1) * sizeof(char));
+                strcpy(copiaPalavra, palavra);
+
+                NO* no = criaNovoNo (char* palavra);
+                arvore1 = adiciona(arvore1, no);
+
+
+                //if(opcao == 1) {} //opção para armazenamento em árvore
+               //else {}//opção para armazenamento em lista
+
+				// antes de guardar a palavra em algum tipo de estrutura usada
+				// para implementar o índice, será necessário fazer uma copia
+				// da mesma, uma vez que o ponteiro 'palavra' aponta para uma
+				// substring dentro da string 'linha', e a cada nova linha lida
+				// o conteúdo da linha anterior é sobreescrito.
+
+				printf("\t\t'%s'\n", palavra);
+			}
+
+			contador_linha++;
+		}
+
+		printf(">>>>> Arquivo carregado!\n");
+
+		return 0;
+
+	//}
+	}
+	//return 1;
+
+}
