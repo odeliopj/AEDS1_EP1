@@ -251,19 +251,3 @@ int main(){
     exibirLista(l);
 
 }
-
-
-    /*char * testePalavra = "Odelio";
-    char * teste2 = "nulo";
-
-    printf("testePalavra e: %s\n", testePalavra);
-    printf("teste2 e: %s\n", teste2);
-
-    //teste2 = strdup(testePalavra);
-    //strcpy(teste2, testePalavra);
-    teste2 = testePalavra;
-    testePalavra = "ERROR";
-
-    printf("O novo teste2 e: %s\n", teste2);
-    printf("O novo testepalavra e: %s\n", testePalavra);*/
-
