@@ -81,19 +81,6 @@ void exibirLista(listaLinhas * l){
 }
 
 
-/* void exibirLista(listaLinhas * l){
-    elementoListaLinhas * end = l->inicio;
-    printf("Lista: \" ");
-
-    int i = 0;
-    while (i < 6){
-        printf("%i ", end->linha);
-        end = end->prox;
-        i++;
-    }
-    printf("\"\n");
-} */
-
 /////////////////////////////////////////////////////////////////////
 
 
