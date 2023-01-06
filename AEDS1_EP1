@@ -1,33 +1,23 @@
 ////////////////////// ALUNOS ////////////////////////
-// Odélio POrto Júnior - 12701501                   //
+//  Odélio Porto Júnior - 12701501                   //
 //                                                  //
 //                                                  //
 //////////////////////////////////////////////////////
-
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stddef.h>
 #include <math.h>
+#include <time.h>
 
+#define TAMANHO 1000
 #define true 1
 #define false 0
-#define TAMANHO 1000
-
 typedef int bool;
 
-////////////////// LISTA /////////////////////////////////////
 
-///////////////// 1) ESTRUTURA DE DADOS  - LISTA /////////////
-
-
-////////////////// LISTA  - FUNÇÕES //////////////////////////
-
-
-/******************************************************************/
-
-
+//////////////////// STRSEP() /////////////////////////////////////////////
 char *strsep(char **stringp, const char *delim) {
     char *rv = *stringp;
     if (rv) {
@@ -39,77 +29,156 @@ char *strsep(char **stringp, const char *delim) {
     return rv;
 }
 
-////////////////// ARVORE  //////////////////////////////
+
+/////////////////// 1) INDEXADOR I - LISTA LIGADA /////////////////////////
+
+                            // Completar //
 
 
-///////////////// 1) ESTRUTURA DE DADOS ////////////////
+///////////////////  2) INDEXADOR II - ÁRVORE BINÁRIA /////////////////////
 
+
+/* 2.1) FUNÇÕES - LISTA LIGADA AUXILIAR */
+/* Para armazenar as linhas em que cada palavra aparece */
+
+/* 2.1.1) Data Struct */
 typedef struct aux{
-    int linhaPalavra;
-    int contador;
-    char *palavra;
-    struct aux *esq, *dir;
-} NO;
-////////////////// ARVORE  - FUNÇÕES ///////////////////
-///////////////// 2) INSERÇÃO /////////////////////////
+    int linha;
+    struct aux* prox;
+} elementoListaLinhas;
 
-/* 2.1) Inicialização */
-// somente endereço do nó raiz
-NO* inicializa() {
+typedef struct {
+    elementoListaLinhas * inicio;
+} listaLinhas;
+
+/* 2.1.2) Inicilização */
+void inicializarLista(listaLinhas * l){
+    l->inicio = NULL;
+}
+
+/* 2.1.3) Inserção*/
+/*Função auxiliar - evitar que seja inserido elemento repetido */
+elementoListaLinhas * buscaSequencialExc(listaLinhas * l, int contador_linha, elementoListaLinhas** ant){
+    *ant = NULL;
+    elementoListaLinhas * atual = l->inicio;
+
+    while ((atual != NULL) && (atual->linha < contador_linha)){
+        *ant = atual;
+        atual = atual->prox;
+    }
+    if ((atual != NULL) && (atual->linha == contador_linha)) return atual;
+    return NULL;
+}
+
+bool inserirElemListaOrd(listaLinhas * l, int contador_linha){
+    elementoListaLinhas * ant;
+    elementoListaLinhas * i;
+
+    i = buscaSequencialExc(l, contador_linha, &ant);
+    if (i != NULL) {
+            return false;
+    }
+
+    i = (elementoListaLinhas*) malloc(sizeof(elementoListaLinhas));
+    i->linha = contador_linha;
+
+    if (ant == NULL){
+        i->prox = l->inicio;
+        l->inicio = i;
+    }
+    else {
+        i->prox = ant->prox;
+        ant->prox = i;
+    }
+    return true;
+}
+
+/* 2.1.4) Imprimir */
+void exibirLista(listaLinhas * l){
+    elementoListaLinhas * end = l->inicio;
+    printf("\nLista: \" ");
+    while (end != NULL){
+        printf("%i ", end->linha);
+        end = end->prox;
+    }
+    printf("\"\n");
+}
+
+/*--------------------------------------------------------------*/
+
+/* 2.2) FUNÇÕES - ÁRVORE BINÁRIA*/
+/* Indexar palavras nos nós (sem repetição) */
+
+/* 2.2.1) Data Struct - Nó da árvore */
+typedef struct aux1 {
+    int numPalavra; // número de vezes que a palavra aparece no texto
+    listaLinhas * listaLinhas; // armazenar as linhas em que a palavra aparece (lista ligada)
+    char * palavra;
+    struct aux1 *esq, *dir;
+} NO;
+
+/* 2.2.2) Inicializização da Árvore */
+NO * inicializaArvore() {
     return(NULL);
 }
 
-/* 2.2) Cria novo nó*/
-NO* criaNovoNo (char* palavra){
-   NO novoNo = (NO*) malloc(sizeof(NO));
-   novoNo->esq = NULL;
-   novoNo->dir = NULL;
-   novoNo->linhaPalavra = 0;
-   novoNo->contador = 0;
-   strcpy(novoNo->palavra, palavra);
-   return (novoNo);
+/* 2.2.3) Criação do Nó */
+NO * criaNovoNo(char * palavra, int contador_linha2) {
+    NO * novoNo = (NO*) malloc(sizeof(NO));
+    novoNo->palavra = strdup(palavra);
+    novoNo->numPalavra = 1;
+    novoNo->esq = NULL;
+    novoNo->dir = NULL;
+
+    listaLinhas* inicListaLinhas = (listaLinhas*) malloc(sizeof(listaLinhas)); // lista ligada p/ armazenar as linhas em que a palavra aparece
+    elementoListaLinhas * element = (elementoListaLinhas*) malloc(sizeof(elementoListaLinhas));
+    element->linha = contador_linha2;
+    element->prox = NULL;
+    inicListaLinhas->inicio = element;
+
+    novoNo->listaLinhas = inicListaLinhas;
 }
 
-/* 2.3) Inserção - adiciona*/
-NO* adiciona(NO* raiz, NO* no) {
+/* 2.2.4) Insere Nó*/
+NO * adiciona(NO * raiz, NO * no, int contador_linha){
+    if (raiz == NULL) return(no);
 
-    if(raiz == NULL){
-        return no;
+    int comparacao = strcasecmp(no->palavra, raiz->palavra);
+    if(comparacao == 0){
+        raiz->numPalavra += 1; //atualiza o contador se a palavra é repetida
+        inserirElemListaOrd(raiz->listaLinhas, contador_linha); // armazena a linha na qual a palavra repetida está
     }
+    else if (comparacao < 0)
+        raiz->esq = adiciona(raiz->esq, no, contador_linha);
+    else
+        raiz->dir = adiciona(raiz->dir, no, contador_linha);
+    return (raiz);
+}
 
-    else{
+/* 2.2.5) Busca Binária */
+NO * buscaBinaria(char * palavraBuscada, NO * raiz){ //<<<<<<<<<<<<<<<<<<<<<<<<<<<< BUSCA
 
-       if(strcmp(no->palavra, raiz->palavra) < 0){
-            if (raiz->esq != NULL)
-                raiz->dir = adiciona(raiz->esq, no);
-            else{
-                raiz->esq = no;
-            }
-       }
+    if (raiz == NULL) return(NULL);
 
-       else{
-            if(raiz->dir != NULL)
-                raiz->dir = adiciona(raiz->dir, no);
-            else
-                raiz->dir = no;
-        }
-            return raiz;
+    int comparacao = strcasecmp(palavraBuscada, raiz->palavra);
+    if (comparacao == 0) return (raiz);
+    if (comparacao < 0) return buscaBinaria (palavraBuscada, raiz->esq);
+    return buscaBinaria (palavraBuscada, raiz->dir);
+}
+
+/* 2.2.6) Imprimir */
+void exibirArvore(NO* raiz){
+    if (raiz != NULL){
+        printf("%s", raiz->palavra);
+        printf("(");
+        exibirArvore(raiz->esq);
+        exibirArvore(raiz->dir);
+        printf(")");
     }
 }
 
-/////////////////////////IMPRIME //////////////////////
-  if (arvore != NULL) {
-    imprime(arvore->esq);
-    printf("%s ", arvore->palavra);
-    imprime(arvore->dir);
-  }
-}
 
-
-/******************************************************/
-
-/////////////////// MAIN //////////////////////////////
-
+//////////////////////// 3) MAIN ////////////////////////////////////////
 
 int main(int argc, char ** argv){
 
@@ -118,85 +187,126 @@ int main(int argc, char ** argv){
 	char * copia_ponteiro_linha;
 	char * quebra_de_linha;
 	char * palavra;
+	char * copiaPalavra;
+	char tipoEstrutura[7];
+	char * txt;
 	int contador_linha;
+	double tempoGastoIns = 0.0;
+	double tempoGastoBusca = 0.0;
+    NO * raiz = inicializaArvore();
+    NO * tempNO;
 
-	/*Escolha da estrutura pelo usuário*/
-    int opcao = 0;
-    while(opcao == 0){
-        printf("Escolha o tipo de estrutura: \n\nDigite 1 para Lista\nDigite 2 para Arvore\n\n");
-        scanf("%i", &opcao);
-        printf("\n %d \n", opcao);
-    }
+	//if(argc == 2) {
 
+    printf("\nEscolhae o tipo de estrutura (1) lista ou (2) arvore: "); // >>>>>>>>>> IMPLEMENTAR -> Passar para tipoEstrutura o argv[1]
+    scanf("%s", tipoEstrutura);
+    printf("\nEscolhido: %s\n", tipoEstrutura);
 
-    /* Obter o nome do arquivo do usuário */
-    char nomeArquivo[30];
-    printf("Digite o nome do arquivo (inclua a extensao '.txt' no nome): ");
-    scanf("%s", &nomeArquivo);
-    printf("O nome do arquivo e: %s.\n\n\n", nomeArquivo);
-
-    //if(argc == 2) {
+    char * escolhaLista = "lista";
+    int resultadoEstr = strcasecmp(escolhaLista, tipoEstrutura);
 
 
-   /////////////////// OPÇÃO 1- LISTA /////////////////////////////
-   if (opcao == 1){
+    //////////// <CRIAÇÃO ÁRVORE > //////////////////////////////////////////
 
+    clock_t inicioCarrega = clock(); //<<<<<<<<<<<<<<<<<<<<< CLOCK
+    if (resultadoEstr != 0){
 
-
-	}
-  
-	/////////////////// OPÇÃO 2 - ARVORE ////////////////////////////
-    else if (opcao == 2){
-		in = fopen(nomeArquivo, "r");
+        txt = "texto_ep1.txt"; // >>>>>>>>>> IMPLEMENTAR -> Passar para tipoEstrutura o argv[1]
+        in = fopen(txt, "r");
+		//in = fopen(argv[1], "r");// >>>>>> DÚVIDA: 'argv[1]' corresponde ao arquivo txt?
 
 		printf(">>>>> Carregando arquivo...\n");
 
 		contador_linha = 0;
- 		linha = (char *) malloc((TAMANHO + 1) * sizeof(char)); //cria um vetor para as linhas
+ 		linha = (char *) malloc((TAMANHO + 1) * sizeof(char)); // ARRAY de chars
 
-		while(in && fgets(linha, TAMANHO, in)){ //reads a line from the specified stream and stores it into the string pointed to by str
+		while(in && fgets(linha, TAMANHO, in)){
 
 			if( (quebra_de_linha = strrchr(linha, '\n')) ) *quebra_de_linha = 0;
 
 			printf("linha %03d: '%s'\n", contador_linha + 1, linha);
 
-			// fazemos uma copia do endereço que corresponde ao array de chars
-			// usado para armazenar cada linha lida do arquivo pois a função 'strsep'
-			// modifica o endereço do ponteiro a cada chamada feita a esta função (e
-			// não queremos que 'linha' deixe de apontar para o inicio do array).
-
 			copia_ponteiro_linha = linha;
 
 			while( (palavra = strsep(&copia_ponteiro_linha, " ")) ){
 
-                char* copiaPalavra = (char*) malloc((strlen(palavra) + 1) * sizeof(char));
-                strcpy(copiaPalavra, palavra);
+                copiaPalavra = strdup(palavra);
 
-                NO* no = criaNovoNo (char* palavra);
-                arvore1 = adiciona(arvore1, no);
+                /* Criação da Árvore */
+                int contador_linha2 = contador_linha + 1; //indica qual a linha a palavra está, para inclusão na lista ligada das linhas
+                tempNO = criaNovoNo(copiaPalavra, contador_linha2);
+                raiz = adiciona(raiz, tempNO, contador_linha2);
 
+           		printf("\t\t'%s'\n", palavra);
 
-                //if(opcao == 1) {} //opção para armazenamento em árvore
-               //else {}//opção para armazenamento em lista
-
-				// antes de guardar a palavra em algum tipo de estrutura usada
-				// para implementar o índice, será necessário fazer uma copia
-				// da mesma, uma vez que o ponteiro 'palavra' aponta para uma
-				// substring dentro da string 'linha', e a cada nova linha lida
-				// o conteúdo da linha anterior é sobreescrito.
-
-				printf("\t\t'%s'\n", palavra);
 			}
 
 			contador_linha++;
-		}
+		 }
 
-		printf(">>>>> Arquivo carregado!\n");
+		 printf(">>>>> Arquivo carregado na Arvore!\n");
 
-		return 0;
+ 		//return 0;
+    }
+    clock_t fimCarrega  = clock();
+	tempoGastoIns = (double)(fimCarrega - inicioCarrega) / CLOCKS_PER_SEC; //<<<<<<<<<<<<<<<<<<<<< CLOCK
+    tempoGastoIns = tempoGastoIns * 1000;
+
+    //////////////////////////// CRIAÇÃO LISTA LIGADA ///////////////////////////////////////////////////
+
+        // else {
+        //}
+
+    //////////////////////////// 4) IF - BUSCA ARVORE / ELSE - LISTA ////////////////////////////////////////
+
+    printf("\n\nTipo de indice: 'arvore'\n");
+    printf("Arquivo texto: '%s'\n", txt); // >>>>>>>>>> IMPLEMENTAR -> Passar para tipoEstrutura o argv[1]
+    printf("Numero de linhas no arquivo: %d\n", contador_linha);
+    printf("Tempo para carregar o arquivo e construir o indice: %.3f ms\n", tempoGastoIns);
+
+    char * palavraFimLoop = "fim";
+    char * comandoBusca = "busca";
+    char palavraBuscada[50];
+    char comando_digitado[6];
+    int resultaDoEstr = 1;
+    int * pResultaDoEstr = &resultaDoEstr;
+
+    do{
+        printf("> ");
+        scanf("%s", comando_digitado);
+
+        *pResultaDoEstr = strcasecmp(palavraFimLoop, comando_digitado);
+
+        if (*pResultaDoEstr == 0)
+            return 0;
+
+        else if ( strcasecmp(comandoBusca, comando_digitado) == 0 ){
+            printf(" > Digite a palavra buscada: ");
+            scanf("%s", &palavraBuscada);
+            NO * noResultadoBusca = buscaBinaria(palavraBuscada, raiz);
+
+            if (noResultadoBusca == NULL)
+                printf("Palavra '%s' nao encontrada",palavraBuscada);
+
+            else if (noResultadoBusca != NULL)
+                printf ("Existem %d ocorrencias da palavra '%s' na(s) seguinte(s) linha(s):\n", noResultadoBusca->numPalavra, noResultadoBusca->palavra);
+
+            //int c = 0; >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Imprimir as linhas
+            //while (c < noResultadoBusca-> numPalavra){
+                 // >>>>>>>>>>>> INCLUIR - imprimir as linhas
+            //}
+        }
+        else
+            printf("Opcao invalida!");
+
+    } while (*pResultaDoEstr != 0);
+
 
 	//}
-	}
-	//return 1;
-
+	return 1;
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
+
+
+
+
