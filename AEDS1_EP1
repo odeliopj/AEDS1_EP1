@@ -17,8 +17,10 @@
 typedef int bool;
 
 
-//////////////////// STRSEP() /////////////////////////////////////////////
-char *strsep(char **stringp, const char *delim) {
+//////////////////// 1) FUNÇÕES AUXILIARES GERAIS /////////////////////////
+
+/* 1.1) strsep() */
+char *strsep(char **stringp, const char *delim) { // o compilador utilizado não reconheceu esta função, por isso ela foi implementada
     char *rv = *stringp;
     if (rv) {
         *stringp += strcspn(*stringp, delim);
@@ -29,19 +31,12 @@ char *strsep(char **stringp, const char *delim) {
     return rv;
 }
 
+/*---------------------------------------------------------------------*/
 
-/////////////////// 1) INDEXADOR I - LISTA LIGADA /////////////////////////
-
-                            // Completar //
-
-
-///////////////////  2) INDEXADOR II - ÁRVORE BINÁRIA /////////////////////
-
-
-/* 2.1) FUNÇÕES - LISTA LIGADA AUXILIAR */
+/* 1.2) LISTA LIGADA AUXILIAR - LINHAS DE CADA PALAVRA */
 /* Para armazenar as linhas em que cada palavra aparece */
 
-/* 2.1.1) Data Struct */
+/* 1.2.1) Data Struct */
 typedef struct aux{
     int linha;
     struct aux* prox;
@@ -51,12 +46,12 @@ typedef struct {
     elementoListaLinhas * inicio;
 } listaLinhas;
 
-/* 2.1.2) Inicilização */
+/* 1.2.2) Inicilização */
 void inicializarLista(listaLinhas * l){
     l->inicio = NULL;
 }
 
-/* 2.1.3) Inserção*/
+/* 1.2.3) Inserção*/
 /*Função auxiliar - evitar que seja inserido elemento repetido */
 elementoListaLinhas * buscaSequencialExc(listaLinhas * l, int contador_linha, elementoListaLinhas** ant){
     *ant = NULL;
@@ -93,7 +88,7 @@ bool inserirElemListaOrd(listaLinhas * l, int contador_linha){
     return true;
 }
 
-/* 2.1.4) Imprimir */
+/* 1.2.4) Imprimir */
 void exibirLista(listaLinhas * l){
     elementoListaLinhas * end = l->inicio;
     printf("\nLista: \" ");
@@ -104,9 +99,87 @@ void exibirLista(listaLinhas * l){
     printf("\"\n");
 }
 
-/*--------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 
-/* 2.2) FUNÇÕES - ÁRVORE BINÁRIA*/
+/* 1.3.1) LISTA LIGADA AUXILIAR II - ARMAZENAR O TXT. EM UMA LISTA LIGADA */
+/* Armazena todo o texto em uma lista ligada, durante o loop que percorre o 'FILE * in', no laço 'while(in && fgets(linha, TAMANHO, in))' */ 
+/* Esta lista ligada é convertida em um array de ponteiros para char posteriormente */
+
+/* 1.3.1) Data Struct */
+typedef struct aux3{
+    int linha;
+    char * pontLinha;
+    struct aux3* prox;
+} linhaTxt;
+
+typedef struct {
+    linhaTxt * inicio;
+} txtArmazenadoLista;
+
+/* 1.3.2) Inicilização */
+void inicializarTxtLista(txtArmazenadoLista * listaT){
+    listaT->inicio = NULL;
+}
+
+/* 1.3.3) Inserção*/
+linhaTxt * buscaSequencialExcTex(txtArmazenadoLista * l, int contador_linha, linhaTxt** ant){
+    *ant = NULL;
+    linhaTxt * atual = l->inicio;
+
+    while ((atual != NULL) && (atual->linha < contador_linha)){
+        *ant = atual;
+        atual = atual->prox;
+    }
+    if ((atual != NULL) && (atual->linha == contador_linha)) return atual;
+    return NULL;
+}
+
+bool inserirTextoListaOrd(txtArmazenadoLista * l, char * linha, int contador_linha){
+    linhaTxt * ant;
+    linhaTxt * i;
+
+    i = buscaSequencialExcTex(l, contador_linha, &ant);
+    if (i != NULL) {
+            return false;
+    }
+
+    i = (linhaTxt*) malloc(sizeof(linhaTxt));
+
+    i->linha = contador_linha;
+
+    char * intermed = (char *) malloc((TAMANHO + 1) * sizeof(char));
+    strcpy(intermed, linha);
+    i->pontLinha = intermed;
+
+    if (ant == NULL){
+        i->prox = l->inicio;
+        l->inicio = i;
+    }
+    else {
+        i->prox = ant->prox;
+        ant->prox = i;
+    }
+    return true;
+}
+
+/* 1.3.4) Imprimir */
+void exibirTxtLista(txtArmazenadoLista * l){
+    linhaTxt * end = l->inicio;
+    printf("\nLista: \" ");
+    while (end != NULL){
+        printf("%s\n", end->pontLinha);
+        end = end->prox;
+    }
+    printf("\"\n");
+}
+
+/////////////////// 2) INDEXADOR - LISTA LIGADA /////////////////////////
+
+                            // Completar //
+
+///////////////////  3) INDEXADOR - ÁRVORE BINÁRIA /////////////////////
+
+/* 3.2) FUNÇÕES - ÁRVORE BINÁRIA*/
 /* Indexar palavras nos nós (sem repetição) */
 
 /* 2.2.1) Data Struct - Nó da árvore */
@@ -117,12 +190,12 @@ typedef struct aux1 {
     struct aux1 *esq, *dir;
 } NO;
 
-/* 2.2.2) Inicializização da Árvore */
+/* 3.2.2) Inicializização da Árvore */
 NO * inicializaArvore() {
     return(NULL);
 }
 
-/* 2.2.3) Criação do Nó */
+/* 3.2.3) Criação do Nó */
 NO * criaNovoNo(char * palavra, int contador_linha2) {
     NO * novoNo = (NO*) malloc(sizeof(NO));
     novoNo->palavra = strdup(palavra);
@@ -139,7 +212,7 @@ NO * criaNovoNo(char * palavra, int contador_linha2) {
     novoNo->listaLinhas = inicListaLinhas;
 }
 
-/* 2.2.4) Insere Nó*/
+/* 3.2.4) Insere Nó*/
 NO * adiciona(NO * raiz, NO * no, int contador_linha){
     if (raiz == NULL) return(no);
 
@@ -155,7 +228,7 @@ NO * adiciona(NO * raiz, NO * no, int contador_linha){
     return (raiz);
 }
 
-/* 2.2.5) Busca Binária */
+/* 3.2.5) Busca Binária */
 NO * buscaBinaria(char * palavraBuscada, NO * raiz){ //<<<<<<<<<<<<<<<<<<<<<<<<<<<< BUSCA
 
     if (raiz == NULL) return(NULL);
@@ -166,7 +239,7 @@ NO * buscaBinaria(char * palavraBuscada, NO * raiz){ //<<<<<<<<<<<<<<<<<<<<<<<<<
     return buscaBinaria (palavraBuscada, raiz->dir);
 }
 
-/* 2.2.6) Imprimir */
+/* 3.2.6) Imprimir */
 void exibirArvore(NO* raiz){
     if (raiz != NULL){
         printf("%s", raiz->palavra);
@@ -178,7 +251,7 @@ void exibirArvore(NO* raiz){
 }
 
 
-//////////////////////// 3) MAIN ////////////////////////////////////////
+//////////////////////// 4) MAIN ////////////////////////////////////////
 
 int main(int argc, char ** argv){
 
@@ -193,10 +266,12 @@ int main(int argc, char ** argv){
 	int contador_linha;
 	double tempoGastoIns = 0.0;
 	double tempoGastoBusca = 0.0;
-    NO * raiz = inicializaArvore();
-    NO * tempNO;
+    	NO * raiz = inicializaArvore();
+   	NO * tempNO;
+	txtArmazenadoLista * txtArmazenado = (txtArmazenadoLista*) malloc(sizeof(txtArmazenadoLista)); //variavel para armazenar o txt em uma lista ligada
+    	inicializarTxtLista(txtArmazenado); 
 
-	//if(argc == 2) {
+//if(argc == 2) {
 
     printf("\nEscolhae o tipo de estrutura (1) lista ou (2) arvore: "); // >>>>>>>>>> IMPLEMENTAR -> Passar para tipoEstrutura o argv[1]
     scanf("%s", tipoEstrutura);
@@ -206,7 +281,7 @@ int main(int argc, char ** argv){
     int resultadoEstr = strcasecmp(escolhaLista, tipoEstrutura);
 
 
-    //////////// <CRIAÇÃO ÁRVORE > //////////////////////////////////////////
+    //////////// CRIAÇÃO DA ÁRVORE BINÁRIA  //////////////////////////////////////////
 
     clock_t inicioCarrega = clock(); //<<<<<<<<<<<<<<<<<<<<< CLOCK
     if (resultadoEstr != 0){
@@ -226,18 +301,22 @@ int main(int argc, char ** argv){
 
 			printf("linha %03d: '%s'\n", contador_linha + 1, linha);
 
+            		/* Criação Lista Ligada Txt */
+            		/* Insere todo o txt. numa lista ligada (cada elemento sendo uma linha) */ //<<<<<<< LISTA LIGADA TXT - Inserido
+            		inserirTextoListaOrd(txtArmazenado, linha, contador_linha);
+
 			copia_ponteiro_linha = linha;
 
 			while( (palavra = strsep(&copia_ponteiro_linha, " ")) ){
 
-                copiaPalavra = strdup(palavra);
+                		copiaPalavra = strdup(palavra);
 
-                /* Criação da Árvore */
-                int contador_linha2 = contador_linha + 1; //indica qual a linha a palavra está, para inclusão na lista ligada das linhas
-                tempNO = criaNovoNo(copiaPalavra, contador_linha2);
-                raiz = adiciona(raiz, tempNO, contador_linha2);
+                		/* Criação da Árvore */
+                		int contador_linha2 = contador_linha + 1; //indica qual a linha a palavra está, para inclusão na lista ligada das linhas
+                		tempNO = criaNovoNo(copiaPalavra, contador_linha2);
+                		raiz = adiciona(raiz, tempNO, contador_linha2);
 
-           		printf("\t\t'%s'\n", palavra);
+           			printf("\t\t'%s'\n", palavra);
 
 			}
 
@@ -248,8 +327,23 @@ int main(int argc, char ** argv){
 
  		//return 0;
     }
+    
+     /*Copiar Lista Ligada Txt p/ Array*/
+    /*Copiamos os elementos da Ligada Ligada Txt para um Array para facilitar o acesso na impressão da linha*/
+    int c = 0;
+    linhaTxt * txt_armazenado_array[contador_linha];
+
+    linhaTxt * end = txtArmazenado->inicio;
+    while (end != NULL){
+        txt_armazenado_array[c] = end;
+        end = end->prox;
+        linhaTxt * temp = txt_armazenado_array[c];
+        //printf("\n\t\tO valor de ' txt_armazenado_array[%d] e: %s'\n", c, temp->pontLinha);
+        c++;
+    }
+    
     clock_t fimCarrega  = clock();
-	tempoGastoIns = (double)(fimCarrega - inicioCarrega) / CLOCKS_PER_SEC; //<<<<<<<<<<<<<<<<<<<<< CLOCK
+    tempoGastoIns = (double)(fimCarrega - inicioCarrega) / CLOCKS_PER_SEC; //<<<<<<<<<<<<<<<<<<<<< CLOCK
     tempoGastoIns = tempoGastoIns * 1000;
 
     //////////////////////////// CRIAÇÃO LISTA LIGADA ///////////////////////////////////////////////////
@@ -283,18 +377,30 @@ int main(int argc, char ** argv){
         else if ( strcasecmp(comandoBusca, comando_digitado) == 0 ){
             printf(" > Digite a palavra buscada: ");
             scanf("%s", &palavraBuscada);
-            NO * noResultadoBusca = buscaBinaria(palavraBuscada, raiz);
+            
+	    clock_t inicioBusca  = clock(); //<<<<<<<<<<<<<<<<<<<<< CLOCK BUSCA
+	    NO * noResultadoBusca = buscaBinaria(palavraBuscada, raiz);
+	    clock_t fimBusca  = clock();
+            tempoGastoBusca = (double)(fimBusca - inicioBusca) / CLOCKS_PER_SEC;
+            tempoGastoBusca = tempoGastoBusca * 1000;
 
             if (noResultadoBusca == NULL)
                 printf("Palavra '%s' nao encontrada",palavraBuscada);
 
-            else if (noResultadoBusca != NULL)
-                printf ("Existem %d ocorrencias da palavra '%s' na(s) seguinte(s) linha(s):\n", noResultadoBusca->numPalavra, noResultadoBusca->palavra);
+            else if (noResultadoBusca != NULL){
+	        printf ("Existem %d ocorrencias da palavra '%s' na(s) seguinte(s) linha(s):\n", noResultadoBusca->numPalavra, noResultadoBusca->palavra);
 
-            //int c = 0; >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Imprimir as linhas
-            //while (c < noResultadoBusca-> numPalavra){
-                 // >>>>>>>>>>>> INCLUIR - imprimir as linhas
-            //}
+                /*Percorre a 'listaLinhas' armazenada no NO da arvore */
+                elementoListaLinhas * endElemListaLinhas = noResultadoBusca->listaLinhas->inicio;
+                while (endElemListaLinhas != NULL){
+                        int numLinha = endElemListaLinhas->linha - 1; // '- 1' serve para equipara o número da linha com o índice do array de linhas
+                        linhaTxt * endLinha = txt_armazenado_array[numLinha];
+                        printf("'%s'\n", endLinha->pontLinha);
+                        endElemListaLinhas = endElemListaLinhas->prox;
+                }
+		
+	     printf("Tempo de busca: %.3f ms\n", tempoGastoIns);
+	    }
         }
         else
             printf("Opcao invalida!");
