@@ -264,7 +264,7 @@ int main(int argc, char ** argv){
 	char tipoEstrutura[7];
 	char * txt;
 	int contador_linha;
-	double tempoGastoIns = 0.0;
+	double tempoGastoCarreg = 0.0;
 	double tempoGastoBusca = 0.0;
     	NO * raiz = inicializaArvore();
    	NO * tempNO;
@@ -343,8 +343,8 @@ int main(int argc, char ** argv){
     }
     
     clock_t fimCarrega  = clock();
-    tempoGastoIns = (double)(fimCarrega - inicioCarrega) / CLOCKS_PER_SEC; //<<<<<<<<<<<<<<<<<<<<< CLOCK
-    tempoGastoIns = tempoGastoIns * 1000;
+    tempoGastoCarreg = (double)(fimCarrega - inicioCarrega) / CLOCKS_PER_SEC; //<<<<<<<<<<<<<<<<<<<<< CLOCK
+    tempoGastoCarreg = tempoGastoCarreg * 1000;
 
     //////////////////////////// CRIAÇÃO LISTA LIGADA ///////////////////////////////////////////////////
 
@@ -356,7 +356,7 @@ int main(int argc, char ** argv){
     printf("\n\nTipo de indice: 'arvore'\n");
     printf("Arquivo texto: '%s'\n", txt); // >>>>>>>>>> IMPLEMENTAR -> Passar para tipoEstrutura o argv[1]
     printf("Numero de linhas no arquivo: %d\n", contador_linha);
-    printf("Tempo para carregar o arquivo e construir o indice: %.3f ms\n", tempoGastoIns);
+    printf("Tempo para carregar o arquivo e construir o indice: %.3f ms\n", tempoGastoCarreg);
 
     char * palavraFimLoop = "fim";
     char * comandoBusca = "busca";
@@ -399,7 +399,7 @@ int main(int argc, char ** argv){
                         endElemListaLinhas = endElemListaLinhas->prox;
                 }
 		
-	     printf("Tempo de busca: %.3f ms\n", tempoGastoIns);
+	     printf("Tempo de busca: %.3f ms\n", tempoGastoBusca);
 	    }
         }
         else
