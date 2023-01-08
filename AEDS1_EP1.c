@@ -173,37 +173,15 @@ void exibirTxtLista(txtArmazenadoLista * l){
     printf("\"\n");
 }
 
-/////////////////// 2) INDEXADOR - LISTA LIGADA /////////////////////////
+/////////////////// 2) INDEXADOR - LISTA SEQUENCIAL /////////////////////////
 
-typedef struct NO_lista_{
+ typedef struct{
 
-    char * palavra;
-    struct NO_lista_ * proximo;
+     int numPalavra;
+     listaLinhas * listalinhas;
+     char * palavra;
 
-} NO_lista;
-
-typedef struct
-{
-    NO_lista * inicio;
-
-} lista_ligada;
-
-
-lista_ligada * criaListaLigada (){
-
-    lista_ligada * lista =  (lista_ligada *) malloc (sizeof(lista_ligada));
-    lista->inicio = NULL;
-
-    return lista;
-}
-
-void * insereNo_lista (lista_ligada * lista, NO_lista * no){
-
-    no->proximo = lista->inicio;
-    
-    lista->inicio = no;
-
-}
+ } NO_lista;
 
 
 ///////////////////  3) INDEXADOR - ÁRVORE BINÁRIA /////////////////////
@@ -241,6 +219,7 @@ NO * criaNovoNo(char * palavra, int contador_linha2) {
     novoNo->listaLinhas = inicListaLinhas;
 }
 
+int contador_palavras = 0;
 /* 3.2.4) Insere Nó*/
 NO * adiciona(NO * raiz, NO * no, int contador_linha){
     if (raiz == NULL) return(no);
@@ -248,12 +227,14 @@ NO * adiciona(NO * raiz, NO * no, int contador_linha){
     int comparacao = strcasecmp(no->palavra, raiz->palavra);
     if(comparacao == 0){
         raiz->numPalavra += 1; //atualiza o contador se a palavra é repetida
-        inserirElemListaOrd(raiz->listaLinhas, contador_linha); // armazena a linha na qual a palavra repetida está
+        inserirElemListaOrd(raiz->listaLinhas, contador_linha);   // armazena a linha na qual a palavra repetida está
+        contador_palavras--;
     }
     else if (comparacao < 0)
         raiz->esq = adiciona(raiz->esq, no, contador_linha);
     else
         raiz->dir = adiciona(raiz->dir, no, contador_linha);
+    
     return (raiz);
 }
 
@@ -278,6 +259,56 @@ void exibirArvore(NO* raiz){
         printf(")");
     }
 }
+
+////////////////////////////////////////////////////////////////////////
+
+    int AddToArray(NO *node, NO_lista arr[], int i)
+    {
+     if(node == NULL)
+          return i;
+
+     if(node->esq != NULL)
+          i = AddToArray(node->esq, arr, i);
+
+     arr[i].palavra = node->palavra;
+     arr[i].numPalavra = node->numPalavra;
+     arr[i].listalinhas = node->listaLinhas;
+     i++;
+
+     if(node->dir != NULL)
+          i = AddToArray(node->dir, arr, i);
+
+     return i;
+    }
+
+
+    NO_lista * buscaBinariaLista(char * palavraBuscada, NO_lista array[],int tamanho){ //<<<<<<<<<<<<<<<<<<<<<<<<<<<< BUSCA
+
+    if (array == NULL) return(NULL);
+
+    int lb,mid,ub;
+    lb = 0;
+    ub = tamanho;
+
+    do{
+        mid = (lb + ub) / 2;
+        if(strcasecmp((palavraBuscada),array[mid].palavra) < 0){
+            ub = mid - 1;
+        }
+        else if (strcasecmp((palavraBuscada),array[mid].palavra)>0){
+            lb =  mid + 1;
+        }
+    }while(strcasecmp((palavraBuscada),array[mid].palavra)!=0 && lb<= ub);
+
+    if(strcasecmp((palavraBuscada),array[mid].palavra)==0){
+        return &array[mid];
+    }
+    else{
+        return NULL;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////// 4) MAIN ////////////////////////////////////////
@@ -310,9 +341,8 @@ int main(int argc, char ** argv){
     //////////// CRIAÇÃO DA ÁRVORE BINÁRIA  //////////////////////////////////////////
 
     clock_t inicioCarrega = clock(); //<<<<<<<<<<<<<<<<<<<<< CLOCKz
-    if (strcasecmp(argv[2],"arvore")==0){
 
-		printf(">>>>> Carregando arquivo...\n");
+		//printf(">>>>> Carregando arquivo...\n");
 
 		contador_linha = 0;
  		linha = (char *) malloc((TAMANHO + 1) * sizeof(char)); // ARRAY de chars
@@ -339,15 +369,14 @@ int main(int argc, char ** argv){
                 		raiz = adiciona(raiz, tempNO, contador_linha2);
 
            			printf("\t\t'%s'\n", palavra);
+                    contador_palavras++; 
 
 			}
 
 			contador_linha++;
 		 }
 
-		 printf(">>>>> Arquivo carregado na Arvore!\n");
-
-    }
+		 //printf(">>>>> Arquivo carregado na Arvore!\n");
     
      /*Copiar Lista Ligada Txt p/ Array*/
     /*Copiamos os elementos da Ligada Ligada Txt para um Array para facilitar o acesso na impressão da linha*/
@@ -362,53 +391,26 @@ int main(int argc, char ** argv){
         //printf("\n\t\tO valor de ' txt_armazenado_array[%d] e: %s'\n", c, temp->pontLinha);
         c++;
     }
-    
-    clock_t fimCarrega  = clock();
-    tempoGastoCarreg = (double)(fimCarrega - inicioCarrega) / CLOCKS_PER_SEC; //<<<<<<<<<<<<<<<<<<<<< CLOCK
-    tempoGastoCarreg = tempoGastoCarreg * 1000;
 
+    clock_t fimCarrega;
+    if (strcasecmp(argv[2],"arvore")==0)
+    {
+        fimCarrega = clock();
+    }
+    
     //////////////////////////// CRIAÇÃO LISTA LIGADA ///////////////////////////////////////////////////
 
+    NO_lista array[contador_palavras];
+
     if (strcasecmp(argv[2],"lista")==0){
-        
-        printf(">>>>> Carregando arquivo...\n");
 
-		contador_linha = 0;
- 		linha = (char *) malloc((TAMANHO + 1) * sizeof(char)); // ARRAY de chars
-
-		while(in && fgets(linha, TAMANHO, in)){
-
-			if( (quebra_de_linha = strrchr(linha, '\n')) ) *quebra_de_linha = 0;
-
-			printf("linha %03d: '%s'\n", contador_linha + 1, linha);
-
-            		/* Criação Lista Ligada Txt */
-            		/* Insere todo o txt. numa lista ligada (cada elemento sendo uma linha) */ //<<<<<<< LISTA LIGADA TXT - Inserido
-            		inserirTextoListaOrd(txtArmazenado, linha, contador_linha);
-
-			copia_ponteiro_linha = linha;
-
-			while( (palavra = strsep(&copia_ponteiro_linha, " ")) ){
-
-                		copiaPalavra = strdup(palavra);
-
-                		/* Criação da Lista Ligada */
-                		int contador_linha2 = contador_linha + 1; //indica qual a linha a palavra está, para inclusão na lista ligada das linhas
-                		tempNO = criaNovoNo(copiaPalavra, contador_linha2);
-                		raiz = adiciona(raiz, tempNO, contador_linha2);
-
-           			printf("\t\t'%s'\n", palavra);
-
-			}
-
-			contador_linha++;
-		 }
-
-		 printf(">>>>> Arquivo carregado na Arvore!\n");
-    
+        AddToArray(raiz,array,0);
+        fimCarrega = clock();
     }
-         
 
+    tempoGastoCarreg = (double)(fimCarrega - inicioCarrega) / CLOCKS_PER_SEC; //<<<<<<<<<<<<<<<<<<<<< CLOCK
+    tempoGastoCarreg = tempoGastoCarreg * 1000;
+         
     //////////////////////////// 4) IF - BUSCA ARVORE / ELSE - LISTA ////////////////////////////////////////
 
     printf("Numero de linhas no arquivo: %d\n", contador_linha);
@@ -433,29 +435,61 @@ int main(int argc, char ** argv){
         else if ( strcasecmp(comandoBusca, comando_digitado) == 0 ){
             scanf("%s", &palavraBuscada);
             
-	    clock_t inicioBusca  = clock(); //<<<<<<<<<<<<<<<<<<<<< CLOCK BUSCA
-	    NO * noResultadoBusca = buscaBinaria(palavraBuscada, raiz);
-	    clock_t fimBusca  = clock();
-            tempoGastoBusca = (double)(fimBusca - inicioBusca) / CLOCKS_PER_SEC;
-            tempoGastoBusca = tempoGastoBusca * 1000;
+        
+        if(strcasecmp(argv[2],"arvore")==0){
+            clock_t inicioBusca  = clock(); //<<<<<<<<<<<<<<<<<<<<< CLOCK BUSCA
+            NO * noResultadoBusca = buscaBinaria(palavraBuscada, raiz);
+            clock_t fimBusca  = clock();
+            
+                tempoGastoBusca = (double)(fimBusca - inicioBusca) / CLOCKS_PER_SEC;
+                tempoGastoBusca = tempoGastoBusca * 1000;
 
-            if (noResultadoBusca == NULL)
-                printf("Palavra '%s' nao encontrada\n",palavraBuscada);
+                if (noResultadoBusca == NULL)
+                    printf("Palavra '%s' nao encontrada\n",palavraBuscada);
 
-            else if (noResultadoBusca != NULL){
-	        printf ("Existem %d ocorrencias da palavra '%s' na(s) seguinte(s) linha(s):\n", noResultadoBusca->numPalavra, noResultadoBusca->palavra);
+                else if (noResultadoBusca != NULL){
+                printf ("Existem %d ocorrencias da palavra '%s' na(s) seguinte(s) linha(s):\n", noResultadoBusca->numPalavra, noResultadoBusca->palavra);
 
-                /*Percorre a 'listaLinhas' armazenada no NO da arvore */
-                elementoListaLinhas * endElemListaLinhas = noResultadoBusca->listaLinhas->inicio;
-                while (endElemListaLinhas != NULL){
-                        int numLinha = endElemListaLinhas->linha - 1; // '- 1' serve para equipara o número da linha com o índice do array de linhas
-                        linhaTxt * endLinha = txt_armazenado_array[numLinha];
-                        printf("'%s'\n", endLinha->pontLinha);
-                        endElemListaLinhas = endElemListaLinhas->prox;
-                }
-		
-	     printf("Tempo de busca: %.3f ms\n", tempoGastoBusca);
-	    }
+                    /*Percorre a 'listaLinhas' armazenada no NO da arvore */
+                    elementoListaLinhas * endElemListaLinhas = noResultadoBusca->listaLinhas->inicio;
+                    while (endElemListaLinhas != NULL){
+                            int numLinha = endElemListaLinhas->linha - 1; // '- 1' serve para equipara o número da linha com o índice do array de linhas
+                            linhaTxt * endLinha = txt_armazenado_array[numLinha];
+                            printf("'%s'\n", endLinha->pontLinha);
+                            endElemListaLinhas = endElemListaLinhas->prox;
+                    }
+            
+            printf("Tempo de busca: %.3f ms\n", tempoGastoBusca);
+            }
+        }
+        else{
+            
+            clock_t inicioBusca  = clock(); //<<<<<<<<<<<<<<<<<<<<< CLOCK BUSCA
+            NO_lista * noResultadoBusca = buscaBinariaLista(palavraBuscada, array, contador_palavras);
+            clock_t fimBusca  = clock();
+            
+                tempoGastoBusca = (double)(fimBusca - inicioBusca) / CLOCKS_PER_SEC;
+                tempoGastoBusca = tempoGastoBusca * 1000;
+
+                if (noResultadoBusca == NULL)
+                    printf("Palavra '%s' nao encontrada\n",palavraBuscada);
+
+                else if (noResultadoBusca != NULL){
+                printf ("Existem %d ocorrencias da palavra '%s' na(s) seguinte(s) linha(s):\n", noResultadoBusca->numPalavra, noResultadoBusca->palavra);
+
+                    /*Percorre a 'listaLinhas' armazenada no NO da lista */
+                    elementoListaLinhas * endElemListaLinhas = noResultadoBusca->listalinhas->inicio;
+                    while (endElemListaLinhas != NULL){
+                            int numLinha = endElemListaLinhas->linha - 1; // '- 1' serve para equipara o número da linha com o índice do array de linhas
+                            linhaTxt * endLinha = txt_armazenado_array[numLinha];
+                            printf("'%s'\n", endLinha->pontLinha);
+                            endElemListaLinhas = endElemListaLinhas->prox;
+                    }
+            
+            printf("Tempo de busca: %.3f ms\n", tempoGastoBusca);
+            }
+
+        }
         }
         else
             printf("Opcao invalida!\n");
@@ -467,7 +501,3 @@ int main(int argc, char ** argv){
 	return 1;
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
-
-
-
-
