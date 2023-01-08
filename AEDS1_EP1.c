@@ -1,6 +1,6 @@
-////////////////////// ALUNOS ////////////////////////
+/////////////////////// ALUNOS ////////////////////////
 //  Odélio Porto Júnior - 12701501                   //
-//                                                  //
+//  Mauricio Georges Silva Assad - 11796103          // 
 //                                                  //
 //////////////////////////////////////////////////////
 
@@ -175,7 +175,36 @@ void exibirTxtLista(txtArmazenadoLista * l){
 
 /////////////////// 2) INDEXADOR - LISTA LIGADA /////////////////////////
 
-                            // Completar //
+typedef struct NO_lista_{
+
+    char * palavra;
+    struct NO_lista_ * proximo;
+
+} NO_lista;
+
+typedef struct
+{
+    NO_lista * inicio;
+
+} lista_ligada;
+
+
+lista_ligada * criaListaLigada (){
+
+    lista_ligada * lista =  (lista_ligada *) malloc (sizeof(lista_ligada));
+    lista->inicio = NULL;
+
+    return lista;
+}
+
+void * insereNo_lista (lista_ligada * lista, NO_lista * no){
+
+    no->proximo = lista->inicio;
+    
+    lista->inicio = no;
+
+}
+
 
 ///////////////////  3) INDEXADOR - ÁRVORE BINÁRIA /////////////////////
 
@@ -261,7 +290,6 @@ int main(int argc, char ** argv){
 	char * quebra_de_linha;
 	char * palavra;
 	char * copiaPalavra;
-	char tipoEstrutura[7];
 	char * txt;
 	int contador_linha;
 	double tempoGastoCarreg = 0.0;
@@ -271,24 +299,18 @@ int main(int argc, char ** argv){
 	txtArmazenadoLista * txtArmazenado = (txtArmazenadoLista*) malloc(sizeof(txtArmazenadoLista)); //variavel para armazenar o txt em uma lista ligada
     	inicializarTxtLista(txtArmazenado); 
 
-//if(argc == 2) {
 
-    printf("\nEscolhae o tipo de estrutura (1) lista ou (2) arvore: "); // >>>>>>>>>> IMPLEMENTAR -> Passar para tipoEstrutura o argv[1]
-    scanf("%s", tipoEstrutura);
-    printf("\nEscolhido: %s\n", tipoEstrutura);
+    printf("Tipo de indice: \'%s\'\n", argv[2]);
+    printf("Arquivo texto: \'%s\'\n", argv[1]);
 
-    char * escolhaLista = "lista";
-    int resultadoEstr = strcasecmp(escolhaLista, tipoEstrutura);
 
+    txt = argv[1]; 
+    in = fopen(txt, "r");
 
     //////////// CRIAÇÃO DA ÁRVORE BINÁRIA  //////////////////////////////////////////
 
-    clock_t inicioCarrega = clock(); //<<<<<<<<<<<<<<<<<<<<< CLOCK
-    if (resultadoEstr != 0){
-
-        txt = "texto_ep1.txt"; // >>>>>>>>>> IMPLEMENTAR -> Passar para tipoEstrutura o argv[1]
-        in = fopen(txt, "r");
-		//in = fopen(argv[1], "r");// >>>>>> DÚVIDA: 'argv[1]' corresponde ao arquivo txt?
+    clock_t inicioCarrega = clock(); //<<<<<<<<<<<<<<<<<<<<< CLOCKz
+    if (strcasecmp(argv[2],"arvore")==0){
 
 		printf(">>>>> Carregando arquivo...\n");
 
@@ -325,7 +347,6 @@ int main(int argc, char ** argv){
 
 		 printf(">>>>> Arquivo carregado na Arvore!\n");
 
- 		//return 0;
     }
     
      /*Copiar Lista Ligada Txt p/ Array*/
@@ -348,13 +369,48 @@ int main(int argc, char ** argv){
 
     //////////////////////////// CRIAÇÃO LISTA LIGADA ///////////////////////////////////////////////////
 
-        // else {
-        //}
+    if (strcasecmp(argv[2],"lista")==0){
+        
+        printf(">>>>> Carregando arquivo...\n");
+
+		contador_linha = 0;
+ 		linha = (char *) malloc((TAMANHO + 1) * sizeof(char)); // ARRAY de chars
+
+		while(in && fgets(linha, TAMANHO, in)){
+
+			if( (quebra_de_linha = strrchr(linha, '\n')) ) *quebra_de_linha = 0;
+
+			printf("linha %03d: '%s'\n", contador_linha + 1, linha);
+
+            		/* Criação Lista Ligada Txt */
+            		/* Insere todo o txt. numa lista ligada (cada elemento sendo uma linha) */ //<<<<<<< LISTA LIGADA TXT - Inserido
+            		inserirTextoListaOrd(txtArmazenado, linha, contador_linha);
+
+			copia_ponteiro_linha = linha;
+
+			while( (palavra = strsep(&copia_ponteiro_linha, " ")) ){
+
+                		copiaPalavra = strdup(palavra);
+
+                		/* Criação da Lista Ligada */
+                		int contador_linha2 = contador_linha + 1; //indica qual a linha a palavra está, para inclusão na lista ligada das linhas
+                		tempNO = criaNovoNo(copiaPalavra, contador_linha2);
+                		raiz = adiciona(raiz, tempNO, contador_linha2);
+
+           			printf("\t\t'%s'\n", palavra);
+
+			}
+
+			contador_linha++;
+		 }
+
+		 printf(">>>>> Arquivo carregado na Arvore!\n");
+    
+    }
+         
 
     //////////////////////////// 4) IF - BUSCA ARVORE / ELSE - LISTA ////////////////////////////////////////
 
-    printf("\n\nTipo de indice: 'arvore'\n");
-    printf("Arquivo texto: '%s'\n", txt); // >>>>>>>>>> IMPLEMENTAR -> Passar para tipoEstrutura o argv[1]
     printf("Numero de linhas no arquivo: %d\n", contador_linha);
     printf("Tempo para carregar o arquivo e construir o indice: %.3f ms\n", tempoGastoCarreg);
 
@@ -375,7 +431,6 @@ int main(int argc, char ** argv){
             return 0;
 
         else if ( strcasecmp(comandoBusca, comando_digitado) == 0 ){
-            printf(" > Digite a palavra buscada: ");
             scanf("%s", &palavraBuscada);
             
 	    clock_t inicioBusca  = clock(); //<<<<<<<<<<<<<<<<<<<<< CLOCK BUSCA
@@ -385,7 +440,7 @@ int main(int argc, char ** argv){
             tempoGastoBusca = tempoGastoBusca * 1000;
 
             if (noResultadoBusca == NULL)
-                printf("Palavra '%s' nao encontrada",palavraBuscada);
+                printf("Palavra '%s' nao encontrada\n",palavraBuscada);
 
             else if (noResultadoBusca != NULL){
 	        printf ("Existem %d ocorrencias da palavra '%s' na(s) seguinte(s) linha(s):\n", noResultadoBusca->numPalavra, noResultadoBusca->palavra);
@@ -403,7 +458,7 @@ int main(int argc, char ** argv){
 	    }
         }
         else
-            printf("Opcao invalida!");
+            printf("Opcao invalida!\n");
 
     } while (*pResultaDoEstr != 0);
 
